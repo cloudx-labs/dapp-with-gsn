@@ -27,6 +27,7 @@
     "@opengsn/contracts": "3.0.0-alpha.6",
     "@opengsn/provider": "3.0.0-alpha.6",
     "@openzeppelin/contracts": "4.7.0-rc.0",
+    "@typechain/ethers-v5": "^10.1.0",
     "@typechain/hardhat": "6.1.2",
     "@types/node": "18.0.0",
     "@types/react": "18.0.14",

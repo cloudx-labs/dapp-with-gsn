@@ -1,10 +1,10 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import 'solidity-coverage';
-import '@nomiclabs/hardhat-etherscan';
-import '@nomiclabs/hardhat-waffle';
+// import 'solidity-coverage';
+// import '@nomiclabs/hardhat-etherscan';
+// import '@nomiclabs/hardhat-waffle';
 import '@typechain/hardhat';
-import 'hardhat-gas-reporter';
-import 'hardhat-deploy';
+// import 'hardhat-gas-reporter';
+// import 'hardhat-deploy';
 import { config as envConfig } from 'dotenv';
 import { HardhatUserConfig } from 'hardhat/config';
 
@@ -43,7 +43,6 @@ const config: HardhatUserConfig = {
   mocha: {
     timeout: 20000,
   },
-  etherscan: { apiKey: etherscanApiKey },
 };
 
 export default config;

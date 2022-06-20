@@ -46,3 +46,7 @@ cache
 artifacts
 /contracts/
 typechain-types/
+
+# Custom libraries
+src/@use-gsn
+@openzeppelin

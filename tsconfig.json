@@ -14,7 +14,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "baseUrl": "src",
-    "typeRoots": ["./src/typing"],
+    "typeRoots": ["./src/typing", "./src/@use-gsn/types.d.ts"],
     "incremental": true
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "./scripts/**.ts"],
