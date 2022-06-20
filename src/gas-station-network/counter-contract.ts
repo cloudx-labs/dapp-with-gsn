@@ -1,11 +1,13 @@
 import { GsnEvent, RelayProvider } from '@opengsn/provider';
 import { ethers, EventFilter, Signer, ContractTransaction } from 'ethers';
-import { GasStationNetwork } from '@use-gsn/gas-station-network';
+import { GasStationNetwork } from '../@use-gsn';
 import CounterInterface from '../abis/src/contracts/Counter.sol/Counter.json';
 
+const COUNTER_ADDRESS = '0x';
+
 class CounterContract extends GasStationNetwork {
-  constructor(address: string, signer: Signer, gsnProvider: RelayProvider) {
-    const contract = new ethers.Contract(address, CounterInterface.abi, signer);
+  constructor(signer: Signer, gsnProvider: RelayProvider) {
+    const contract = new ethers.Contract(COUNTER_ADDRESS, CounterInterface.abi, signer);
     super(signer, gsnProvider, contract);
   }
 

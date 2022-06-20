@@ -1,14 +1,11 @@
 import type { NextPage } from 'next';
 import { Flex, HStack, Heading } from '@chakra-ui/react';
 import WalletConnector from 'components/wallet-connector';
-// import CreateProposal from 'components/create-proposal';
-import ProposalList from 'components/proposal-list';
-import GsnStatus from 'components/gsn-status';
-// import GsnInfo from 'components/gsn-info';
-import useGovernor from 'hooks/useGovernor';
+import Counter from 'components/counter';
+import useCounter from 'hooks/useCounter';
 
 const Home: NextPage = () => {
-  const { castVote } = useGovernor();
+  const { onIncrement, onDecrement, value } = useCounter();
 
   return (
     <Flex p="2rem 20rem" flexDir="column" justify="center">
@@ -24,11 +21,9 @@ const Home: NextPage = () => {
         alignSelf="center"
         color="green.500"
       >
-        Governor using meta-tx with EIP 2771
+        meta-tx using EIP 2771
       </Heading>
-      {/* <CreateProposal onSubmit={() => {}} /> */}
-      <ProposalList castVote={castVote} />
-      <GsnStatus />
+      <Counter onIncrement={onIncrement} onDecrement={onDecrement} value={value} />
     </Flex>
   );
 };

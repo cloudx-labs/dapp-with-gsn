@@ -6,6 +6,7 @@ type IGlobalContext = {
   account: string;
   ethers?: any;
   chainId: number;
-  governorContract: IGovernorContract;
+  theContract: ethers.Contract;
+  gsnStatus: any; // TODO type me
+  setTxStatus: (status: any) => void; // todo typeme
 } | null;
-

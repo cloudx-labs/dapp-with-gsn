@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import Web3Modal from 'web3modal';
-import { initGovernor } from 'gas-station-network/governor';
+import CounterContractWithGsn from 'gas-station-network/counter-contract';
+import { useGsn, initGsn } from '../@use-gsn';
 
 const useDapp = () => {
   const [dappState, setDappState] = useState<IGlobalContext>(null);
@@ -30,7 +31,10 @@ const useDapp = () => {
           window.location.reload();
         });
 
-        const governorContract = await initGovernor(chainId, connection);
+        const paymasterAddress = '0x';
+        const { gsnSigner, gsnProvider } = await initGsn(paymasterAddress, connection);
+        const theContract = new CounterContractWithGsn(gsnSigner, gsnProvider);
+        const { gsnStatus, setTxStatus } = useGsn(theContract);
 
         setDappState({
           provider,
@@ -40,7 +44,9 @@ const useDapp = () => {
           connection,
           network,
           chainId,
-          governorContract,
+          theContract,
+          gsnStatus,
+          setTxStatus
         });
       } catch (err) {
         setError(err);
