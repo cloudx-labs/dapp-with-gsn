@@ -1,21 +1,15 @@
-/* eslint-disable import/no-extraneous-dependencies */
-// import 'solidity-coverage';
-// import '@nomiclabs/hardhat-etherscan';
-// import '@nomiclabs/hardhat-waffle';
+import '@nomiclabs/hardhat-ethers';
 import '@typechain/hardhat';
-// import 'hardhat-gas-reporter';
-// import 'hardhat-deploy';
 import { config as envConfig } from 'dotenv';
 import { HardhatUserConfig } from 'hardhat/config';
 
 envConfig({ path: '.env.local' });
 
-const rinkebyUrl = process.env.RINKEBY_URL || 'https://rinkeby.infura.io/v3/your-api-key';
-const accountPrivateKey = process.env.PRIVATE_KEY_RINKEBY || 'your-private-key';
-const etherscanApiKey = process.env.ETHERSCAN_API_KEY || 'your-api-key';
+const testchainUrl = process.env.TESTCHAIN_URL as string;
+const testchainPrivateKey = process.env.TESTCHAIN_PRIVATE_KEY as string;
+const testchainChainId = process.env.TESTCHAIN_CHAIN_ID as string;
 
 const config: HardhatUserConfig = {
-  defaultNetwork: 'hardhat',
   solidity: {
     version: '0.8.9',
     settings: {
@@ -23,25 +17,17 @@ const config: HardhatUserConfig = {
     },
   },
   networks: {
-    hardhat: {},
-    rinkeby: {
-      url: rinkebyUrl,
-      accounts: [accountPrivateKey],
-    },
-    ganache: {
-      url: 'http://127.0.0.1:7545',
-      chainId: 1337,
-      accounts: [accountPrivateKey],
+    testchain: {
+      url: testchainUrl,
+      chainId: +testchainChainId,
+      accounts: [testchainPrivateKey],
     },
   },
   paths: {
     sources: './src/contracts',
-    tests: './test',
     cache: './cache',
+    tests: './test',
     artifacts: './src/abis',
-  },
-  mocha: {
-    timeout: 20000,
   },
 };
 

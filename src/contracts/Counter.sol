@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 
@@ -19,9 +19,8 @@ contract Counter is ERC2771Context  {
     address public currentUser = address(0);
     uint256 public value;
 
-    constructor(address forwarder, uint256 initValue)
-    ERC2771Context(forwarder)
-    {
+    constructor(uint256 initValue, address forwarder)
+    ERC2771Context(forwarder) {
         value = initValue;
     }
 
@@ -36,5 +35,5 @@ contract Counter is ERC2771Context  {
         emit Decrement(_msgSender(), currentUser, step);
     }
 
-    string public versionRecipient = "3.0.0";
+    string public versionRecipient = "3.0.0-alpha.6"; // todo check this shitt
 }

@@ -1,5 +1,6 @@
 import { useCallback, useContext } from 'react';
 import { GlobalContext } from 'contexts/global';
+import { ethers } from 'ethers';
 
 const useCounter = () => {
   const ctx = useContext(GlobalContext);
@@ -7,7 +8,12 @@ const useCounter = () => {
   const onIncrement = useCallback(
     async (quantity: number) => {
       ctx?.setTxStatus('sending');
-      const response = await ctx?.theContract.onIncrement(quantity);
+      console.log(ctx);
+      const response = await ctx?.contractHandler.theContract.increment(quantity, {
+        maxPriorityFeePerGas: 500000000000,
+        maxFeePerGas: 500000000000,
+        gasLimit: 500000,
+      });
       ctx?.setTxStatus('waiting for mining');
       await response?.wait();
       ctx?.setTxStatus('done');
@@ -18,7 +24,7 @@ const useCounter = () => {
   const onDecrement = useCallback(
     async (quantity: number) => {
       ctx?.setTxStatus('sending');
-      const response = await ctx?.theContract.onDecrement(quantity);
+      const response = await ctx?.contractHandler.theContract.decrement(quantity);
       ctx?.setTxStatus('waiting for mining');
       await response?.wait();
       ctx?.setTxStatus('done');

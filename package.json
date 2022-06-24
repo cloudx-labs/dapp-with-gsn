@@ -27,8 +27,8 @@
     "@opengsn/contracts": "3.0.0-alpha.6",
     "@opengsn/provider": "3.0.0-alpha.6",
     "@openzeppelin/contracts": "4.7.0-rc.0",
-    "@typechain/ethers-v5": "^10.1.0",
-    "@typechain/hardhat": "6.1.2",
+    "@typechain/ethers-v5": "8.0.5",
+    "@typechain/hardhat": "3.0.0",
     "@types/node": "18.0.0",
     "@types/react": "18.0.14",
     "@types/react-dom": "18.0.5",
@@ -37,7 +37,6 @@
     "eslint-config-next": "12.1.6",
     "hardhat": "2.9.9",
     "ts-node": "10.8.1",
-    "typechain": "8.1.0",
     "typescript": "4.7.4",
     "web3": "1.7.3"
   }

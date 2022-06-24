@@ -1,5 +1,5 @@
 interface ICounter {
-  onDecrement: () => void;
-  onIncrement: () => void;
+  onDecrement: (quantity: number) => void;
+  onIncrement: (quantity: number) => void;
   value?: number;
 }

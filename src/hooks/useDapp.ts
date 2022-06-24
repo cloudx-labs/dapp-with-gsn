@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import Web3Modal from 'web3modal';
 import CounterContractWithGsn from 'gas-station-network/counter-contract';
-import { useGsn, initGsn } from '../@use-gsn';
+import { initGsn } from '../gas-station-network/init-gsn';
+import { useGsn } from './useGsn';
 
 const useDapp = () => {
   const [dappState, setDappState] = useState<IGlobalContext>(null);
@@ -13,6 +14,7 @@ const useDapp = () => {
       try {
         const web3Modal = new Web3Modal();
         const connection = await web3Modal.connect();
+        console.log("🚀 ~ file: useDapp.ts ~ line 17 ~ connection", connection)
         if (!connection)
           throw new Error('No "window.ethereum" found. do you have Metamask installed?');
 
@@ -31,10 +33,15 @@ const useDapp = () => {
           window.location.reload();
         });
 
-        const paymasterAddress = '0x';
-        const { gsnSigner, gsnProvider } = await initGsn(paymasterAddress, connection);
-        const theContract = new CounterContractWithGsn(gsnSigner, gsnProvider);
-        const { gsnStatus, setTxStatus } = useGsn(theContract);
+        const paymasterAddress = '0x85B58822d2072124329F541d3d6A7bAeD2E74853';
+        const counterAddress = '0x7B821A3e89225a782c96bc5337dF0c63475141Ba';
+        const { gsnSigner, relayProvider } = await initGsn(paymasterAddress, connection);
+
+        const contractHandler = new CounterContractWithGsn(
+          counterAddress,
+          gsnSigner,
+          relayProvider,
+        );
 
         setDappState({
           provider,
@@ -44,9 +51,9 @@ const useDapp = () => {
           connection,
           network,
           chainId,
-          theContract,
-          gsnStatus,
-          setTxStatus
+          contractHandler,
+          gsnStatus: {},
+          setTxStatus: () => {},
         });
       } catch (err) {
         setError(err);

@@ -8,7 +8,7 @@ const Counter: FC<ICounter> = ({ onIncrement, onDecrement, value }) => (
     </Heading>
     <HStack>
       <Button
-        onClick={onDecrement}
+        onClick={() => onDecrement(10)}
         variant="solid"
         colorScheme="orange"
         bg="orange.900"
@@ -19,7 +19,7 @@ const Counter: FC<ICounter> = ({ onIncrement, onDecrement, value }) => (
         -1
       </Button>
       <Button
-        onClick={onIncrement}
+        onClick={() => onIncrement(10)}
         variant="solid"
         colorScheme="orange"
         bg="orange.900"

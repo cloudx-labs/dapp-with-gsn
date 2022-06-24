@@ -35,7 +35,7 @@ yarn-error.log*
 *.tsbuildinfo
 
 # Abis from contracts
-*/abis/*
+abis/
 
 coverage
 coverage.json
@@ -48,5 +48,5 @@ artifacts
 typechain-types/
 
 # Custom libraries
-src/@use-gsn
+# src/@use-gsn
 @openzeppelin

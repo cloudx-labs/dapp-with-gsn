@@ -4,7 +4,14 @@ import WalletConnector from 'components/wallet-connector';
 import Counter from 'components/counter';
 import useCounter from 'hooks/useCounter';
 
+import { useGsn } from 'hooks/useGsn';
+import { useContext } from 'react';
+import { GlobalContext } from 'contexts/global';
+
 const Home: NextPage = () => {
+  const ctx = useContext(GlobalContext);
+  const jeje = ctx && useGsn(ctx?.contractHandler);
+
   const { onIncrement, onDecrement, value } = useCounter();
 
   return (

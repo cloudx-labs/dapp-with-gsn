@@ -1,22 +1,26 @@
 import { GsnEvent, RelayProvider } from '@opengsn/provider';
 import { ethers, EventFilter, Signer, ContractTransaction } from 'ethers';
-import { GasStationNetwork } from '../@use-gsn';
 import CounterInterface from '../abis/src/contracts/Counter.sol/Counter.json';
 
-const COUNTER_ADDRESS = '0x';
+class CounterContract implements ICounterContract {
+  theContract: ethers.Contract;
+  ethersProvider: ethers.providers.Provider;
+  blockDates: { [key: number]: Date };
+  gsnProvider: RelayProvider;
 
-class CounterContract extends GasStationNetwork {
-  constructor(signer: Signer, gsnProvider: RelayProvider) {
-    const contract = new ethers.Contract(COUNTER_ADDRESS, CounterInterface.abi, signer);
-    super(signer, gsnProvider, contract);
+  constructor(address: string, signer: Signer, gsnProvider: RelayProvider) {
+    this.theContract = new ethers.Contract(address, CounterInterface.abi, signer);
+    this.ethersProvider = signer.provider!;
+    this.gsnProvider = gsnProvider;
+    this.blockDates = {};
   }
 
-  async onIncrement(step: number): Promise<ContractTransaction> {
-    return await this.theContract.increment(step, { gasPrice: 100000 });
+  onIncrement(step: number): Promise<ContractTransaction> {
+    return this.theContract.increment(step, { gasPrice: 100000 });
   }
 
-  async onDecrement(step: number): Promise<ContractTransaction> {
-    return await this.theContract.decrement(step);
+  onDecrement(step: number): Promise<ContractTransaction> {
+    return this.theContract.decrement(step);
   }
 
   async getCurrentValue() {
@@ -24,8 +28,69 @@ class CounterContract extends GasStationNetwork {
     const value = currentValue.toNumber();
     return value;
   }
+
   // //////////////////////////////////////////////////////////////////////////////
-  // Override events
+  // Relay Status
+  // //////////////////////////////////////////////////////////////////////////////
+  async getGsnStatus(): Promise<GsnStatusInfo> {
+    const relayClient = this.gsnProvider.relayClient;
+    const ci = relayClient.dependencies.contractInteractor as any;
+
+    return {
+      relayHubAddress: ci.relayHubInstance.address,
+      forwarderAddress: ci.forwarderInstance.address,
+      paymasterAddress: ci.paymasterInstance.address,
+
+      getPaymasterBalance: () => ci.paymasterInstance.getRelayHub(),
+      getActiveRelayers: async () =>
+        relayClient.dependencies.knownRelaysManager
+          .refresh()
+          .then(() => relayClient.dependencies.knownRelaysManager.allRelayers.length),
+    };
+  }
+  // //////////////////////////////////////////////////////////////////////////////
+  // Methods to handle events
+  // //////////////////////////////////////////////////////////////////////////////
+  async getEventInfo(e: ethers.Event): Promise<EventInfo> {
+    if (!e.args) {
+      return {
+        previousHolder: 'notevent',
+        currentHolder: JSON.stringify(e),
+      };
+    }
+    return {
+      date: await this.getBlockDate(e.blockNumber),
+      previousHolder: e.args.previousHolder,
+      currentHolder: e.args.currentHolder,
+    };
+  }
+
+  async getPastEvents(count = 5) {
+    const currentBlock = (await this.ethersProvider.getBlockNumber()) - 1;
+    const lookupWindow = (30 * 24 * 3600) / 12; // todo harcodeta
+    const startBlock = Math.max(1, currentBlock - lookupWindow);
+
+    // todo check this
+    const logs = await this.theContract.queryFilter(
+      this.theContract.filters.Increment(),
+      startBlock,
+    );
+    const lastLogs = await Promise.all(logs.slice(-count).map((e) => this.getEventInfo(e)));
+    return lastLogs;
+  }
+
+  async getBlockDate(blockNumber: number) {
+    if (!this.blockDates[blockNumber]) {
+      this.blockDates[blockNumber] = new Date(
+        await this.ethersProvider.getBlock(blockNumber).then((b) => {
+          return b.timestamp * 1000;
+        }),
+      );
+    }
+    return this.blockDates[blockNumber];
+  }
+  // //////////////////////////////////////////////////////////////////////////////
+  // Handling Events
   // //////////////////////////////////////////////////////////////////////////////
   listenToEvents(onEvent: (e: EventInfo) => void, onProgress?: (e: GsnEvent) => void) {
     // @ts-ignore
