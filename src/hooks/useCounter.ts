@@ -1,38 +1,54 @@
-import { useCallback, useContext } from 'react';
+import { useCallback, useContext, useState, useEffect } from 'react';
 import { GlobalContext } from 'contexts/global';
-import { ethers } from 'ethers';
 
-const useCounter = () => {
+const useCounter = (gasStationNetwork: any) => {
   const ctx = useContext(GlobalContext);
+  const [counterState, setCounterState] = useState<any>(0);
+
+  const getCounterState = useCallback(async () => {
+    const counterValue = await ctx?.counterContract.getCurrentValue();
+    setCounterState(counterValue);
+  }, []);
 
   const onIncrement = useCallback(
     async (quantity: number) => {
-      ctx?.setTxStatus('sending');
-      console.log(ctx);
-      const response = await ctx?.contractHandler.theContract.increment(quantity, {
-        maxPriorityFeePerGas: 500000000000,
-        maxFeePerGas: 500000000000,
-        gasLimit: 500000,
-      });
-      ctx?.setTxStatus('waiting for mining');
+      gasStationNetwork.updateTxStatus('sending');
+      const response = await ctx?.counterContract.onIncrement(quantity);
+      gasStationNetwork.updateTxStatus('waiting for mining');
       await response?.wait();
-      ctx?.setTxStatus('done');
+      gasStationNetwork.updateTxStatus('done');
     },
     [ctx],
   );
 
   const onDecrement = useCallback(
     async (quantity: number) => {
-      ctx?.setTxStatus('sending');
-      const response = await ctx?.contractHandler.theContract.decrement(quantity);
-      ctx?.setTxStatus('waiting for mining');
+      gasStationNetwork.updateTxStatus('sending');
+      const response = await ctx?.counterContract.onDecrement(quantity);
+      gasStationNetwork.updateTxStatus('waiting for mining');
       await response?.wait();
-      ctx?.setTxStatus('done');
+      gasStationNetwork.updateTxStatus('done');
     },
     [ctx],
   );
 
-  return { onIncrement, onDecrement, value: 0 };
+  useEffect(() => {
+    (async () => {
+      if (ctx?.counterContract) {
+        await getCounterState();
+      }
+    })();
+  }, [ctx?.counterContract]);
+
+  useEffect(() => {
+    (async () => {
+      if (gasStationNetwork.txStatus?.status === 'done') {
+        await getCounterState();
+      }
+    })();
+  }, [gasStationNetwork.txStatus]);
+
+  return { onIncrement, onDecrement, counterState };
 };
 
 export default useCounter;

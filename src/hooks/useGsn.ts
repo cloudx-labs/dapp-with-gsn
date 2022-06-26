@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
-import { ethers } from 'ethers';
+import { useCallback, useContext, useEffect, useState } from 'react';
+import CounterContractWithGsn from 'gas-station-network/counter-contract';
+import { GlobalContext } from 'contexts/global';
 
 type GSNStatusRequest = 'waiting for mining' | 'sending' | 'done';
 
@@ -7,43 +8,41 @@ const prependEvents = (currentEvents: any[] | undefined, newEvents: any[]) => {
   return [...(newEvents ?? []).reverse(), ...(currentEvents ?? [])].slice(0, 5);
 };
 
-export const useGsn = (theContract: any) => {
-  const [gsnStatus, setGSNStatus] = useState({
+export const useGsn = () => {
+  const ctx = useContext(GlobalContext);
+  const [gsnStatus, setGSNStatus] = useState<any>({
     relayHubAddress: '',
     forwarderAddress: '',
     paymasterAddress: '',
     paymasterBalance: '',
-    totalRelayers: 0,
+    totalRelayers: '',
   });
-
   const [txStatus, setTxStatus] = useState<any>(null);
 
-  const updateStatus = useCallback(async (gsnStatus: GsnStatusInfo) => {
-    if (gsnStatus === undefined) {
-      gsnStatus = await theContract.getGsnStatus();
+  const updateGsnStatus = useCallback(async (gsnStatusHandler?: GsnStatusInfo) => {
+    if (gsnStatusHandler === undefined) {
+      // todo: check lo de los params.. .this is necessary?
+      gsnStatusHandler = await ctx?.counterContract.getGsnStatus();
+      return;
     }
-    const paymasterBalanceBN = await gsnStatus.getPaymasterBalance();
-    const paymasterBalance = paymasterBalanceBN.toString();
-    setGSNStatus((prev) => ({ ...prev, paymasterBalance }));
+    const paymasterBalance = await gsnStatusHandler.getPaymasterBalance();
+    const totalRelayers = await gsnStatusHandler.getActiveRelayers();
 
-    const totalRelayersBN = await gsnStatus.getActiveRelayers();
-    const totalRelayers = +totalRelayersBN.toString();
-    setGSNStatus((prev) => ({ ...prev, totalRelayers }));
+    setGSNStatus({
+      paymasterBalance: paymasterBalance.toString(),
+      totalRelayers: totalRelayers.toString(),
+      relayHubAddress: gsnStatusHandler.relayHubAddress,
+      forwarderAddress: gsnStatusHandler.forwarderAddress,
+      paymasterAddress: gsnStatusHandler.paymasterAddress,
+    });
   }, []);
 
   const getItinialState = useCallback(async () => {
-    theContract.listenToEvents((status: GsnStatusInfo) => updateStatus(status));
+    ctx?.counterContract.listenToEvents(() => updateGsnStatus()); // todo: todo check que onda los params aca
+    const gsnStatusHandler = await ctx?.counterContract.getGsnStatus();
 
-    const gsnStatus = await theContract.getGsnStatus();
-
-    setGSNStatus((prev) => ({
-      ...prev,
-      relayHubAddress: gsnStatus.relayHubAddress,
-      forwarderAddress: gsnStatus.forwarderAddress,
-      paymasterAddress: gsnStatus.paymasterAddress,
-    }));
-    await updateStatus(gsnStatus);
-  }, [updateStatus]);
+    await updateGsnStatus(gsnStatusHandler);
+  }, [updateGsnStatus]);
 
   const log = (event: any) =>
     setTxStatus((prev: any) => ({ ...prev, events: prependEvents(prev?.events, [event]) }));
@@ -54,44 +53,37 @@ export const useGsn = (theContract: any) => {
   const onEvent = (event: any) => log(event);
   const onProgress = ({ event }: any) => progress({ event });
 
+  // todo: refactor this
   const getContractState = useCallback(async () => {
-    const events = (await theContract.getPastEvents()) as ethers.Event[];
+    const events = await ctx?.counterContract.getPastEvents();
     setTxStatus((prev: any) => ({ ...prev, events: prependEvents([], events) }));
-  }, [setTxStatus, theContract]);
+  }, [setTxStatus, ctx?.counterContract]);
 
   const updateTxStatus = useCallback(
-    (status: GSNStatusRequest) => {
-      setTxStatus((prev: any) => ({ ...prev, status }));
-    },
+    (status: GSNStatusRequest) => setTxStatus((prev: any) => ({ ...prev, status })),
     [setTxStatus],
   );
 
+  // initial state
   useEffect(() => {
     (async () => {
-      if (theContract) {
+      if (ctx?.counterContract) {
+        ctx?.counterContract.listenToEvents(onEvent, onProgress);
         await getContractState();
-        theContract.listenToEvents(onEvent, onProgress);
+        await getItinialState();
       }
     })();
-  }, [theContract]);
+  }, [ctx?.counterContract]);
 
-  useEffect(() => {
-    if (txStatus?.status === 'done') {
-      (async () => {
-        await getContractState();
-      })();
-    }
-  }, [txStatus]);
-
+  // update state
   useEffect(() => {
     (async () => {
-      if (theContract) await getItinialState();
+      if (txStatus?.status === 'done') {
+        await getContractState();
+        await updateGsnStatus();
+      }
     })();
-  }, [theContract]);
+  }, [txStatus]);
 
-  return {
-    gsnStatus,
-    updateTxStatus,
-    txStatus,
-  };
+  return { gsnStatus, updateTxStatus, txStatus };
 };

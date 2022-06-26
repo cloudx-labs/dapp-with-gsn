@@ -4,10 +4,10 @@ interface EventInfo {                                                           
 
 interface GsnStatusInfo {
   getActiveRelayers: () => Promise<number>;
-  getPaymasterBalance: () => Promise<string>;
-  relayHubAddress: string;
-  paymasterAddress: string;
-  forwarderAddress: string;
+  getPaymasterBalance: () => Promise<BN>;
+  relayHubAddress?: string;
+  paymasterAddress?: string;
+  forwarderAddress?: string;
 }
 
 interface IGasStationNetwork {

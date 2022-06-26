@@ -16,11 +16,19 @@ class CounterContract implements ICounterContract {
   }
 
   onIncrement(step: number): Promise<ContractTransaction> {
-    return this.theContract.increment(step, { gasPrice: 100000 });
+    return this.theContract.increment(step, {
+      maxPriorityFeePerGas: 500000000000,
+      maxFeePerGas: 500000000000,
+      gasLimit: 500000,
+    });
   }
 
   onDecrement(step: number): Promise<ContractTransaction> {
-    return this.theContract.decrement(step);
+    return this.theContract.decrement(step, {
+      maxPriorityFeePerGas: 500000000000,
+      maxFeePerGas: 500000000000,
+      gasLimit: 500000,
+    });
   }
 
   async getCurrentValue() {
@@ -33,19 +41,25 @@ class CounterContract implements ICounterContract {
   // Relay Status
   // //////////////////////////////////////////////////////////////////////////////
   async getGsnStatus(): Promise<GsnStatusInfo> {
-    const relayClient = this.gsnProvider.relayClient;
-    const ci = relayClient.dependencies.contractInteractor as any;
+    const { relayClient } = this.gsnProvider;
+    const { contractInteractor, knownRelaysManager } = relayClient.dependencies;
+    const { relayHubAddress, forwarderAddress, paymasterAddress } =
+      contractInteractor.getDeployment();
+    const { relayHubInstance } = contractInteractor;
+
+    const getPaymasterBalance = () => relayHubInstance.balanceOf(paymasterAddress as string);
+    const getActiveRelayers = async () => {
+      await knownRelaysManager.refresh();
+      const relayers = knownRelaysManager.allRelayers.length;
+      return relayers;
+    };
 
     return {
-      relayHubAddress: ci.relayHubInstance.address,
-      forwarderAddress: ci.forwarderInstance.address,
-      paymasterAddress: ci.paymasterInstance.address,
-
-      getPaymasterBalance: () => ci.paymasterInstance.getRelayHub(),
-      getActiveRelayers: async () =>
-        relayClient.dependencies.knownRelaysManager
-          .refresh()
-          .then(() => relayClient.dependencies.knownRelaysManager.allRelayers.length),
+      relayHubAddress,
+      forwarderAddress,
+      paymasterAddress,
+      getPaymasterBalance,
+      getActiveRelayers,
     };
   }
   // //////////////////////////////////////////////////////////////////////////////
@@ -60,8 +74,8 @@ class CounterContract implements ICounterContract {
     }
     return {
       date: await this.getBlockDate(e.blockNumber),
-      previousHolder: e.args.previousHolder,
-      currentHolder: e.args.currentHolder,
+      previousHolder: e.args.previousHolder, // todo: this is necessary ?
+      currentHolder: e.args.currentHolder, // todo: this is necessary ?
     };
   }
 
