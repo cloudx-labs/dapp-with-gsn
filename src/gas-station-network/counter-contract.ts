@@ -1,18 +1,12 @@
-import { GsnEvent, RelayProvider } from '@opengsn/provider';
+import { RelayProvider } from '@opengsn/provider';
+import { onEvent, onProgress, ContractWithGsn } from '@use-gsn';
 import { ethers, EventFilter, Signer, ContractTransaction } from 'ethers';
 import CounterInterface from '../abis/src/contracts/Counter.sol/Counter.json';
 
-class CounterContract implements ICounterContract {
-  theContract: ethers.Contract;
-  ethersProvider: ethers.providers.Provider;
-  blockDates: { [key: number]: Date };
-  gsnProvider: RelayProvider;
-
+class CounterContract extends ContractWithGsn implements ICounterContract {
   constructor(address: string, signer: Signer, gsnProvider: RelayProvider) {
-    this.theContract = new ethers.Contract(address, CounterInterface.abi, signer);
-    this.ethersProvider = signer.provider!;
-    this.gsnProvider = gsnProvider;
-    this.blockDates = {};
+    const theContract = new ethers.Contract(address, CounterInterface.abi, signer);
+    super(signer, gsnProvider, theContract);
   }
 
   onIncrement(step: number): Promise<ContractTransaction> {
@@ -38,31 +32,6 @@ class CounterContract implements ICounterContract {
   }
 
   // //////////////////////////////////////////////////////////////////////////////
-  // Relay Status
-  // //////////////////////////////////////////////////////////////////////////////
-  async getGsnStatus(): Promise<GsnStatusInfo> {
-    const { relayClient } = this.gsnProvider;
-    const { contractInteractor, knownRelaysManager } = relayClient.dependencies;
-    const { relayHubAddress, forwarderAddress, paymasterAddress } =
-      contractInteractor.getDeployment();
-    const { relayHubInstance } = contractInteractor;
-
-    const getPaymasterBalance = () => relayHubInstance.balanceOf(paymasterAddress as string);
-    const getActiveRelayers = async () => {
-      await knownRelaysManager.refresh();
-      const relayers = knownRelaysManager.allRelayers.length;
-      return relayers;
-    };
-
-    return {
-      relayHubAddress,
-      forwarderAddress,
-      paymasterAddress,
-      getPaymasterBalance,
-      getActiveRelayers,
-    };
-  }
-  // //////////////////////////////////////////////////////////////////////////////
   // Methods to handle events
   // //////////////////////////////////////////////////////////////////////////////
   async getEventInfo(e: ethers.Event): Promise<EventInfo> {
@@ -81,7 +50,7 @@ class CounterContract implements ICounterContract {
 
   async getPastEvents(count = 5) {
     const currentBlock = (await this.ethersProvider.getBlockNumber()) - 1;
-    const lookupWindow = (30 * 24 * 3600) / 12; // todo harcodeta
+    const lookupWindow = (30 * 24 * 3600) / 12; // todo:  harcodeta
     const startBlock = Math.max(1, currentBlock - lookupWindow);
 
     // todo check this
@@ -93,20 +62,10 @@ class CounterContract implements ICounterContract {
     return lastLogs;
   }
 
-  async getBlockDate(blockNumber: number) {
-    if (!this.blockDates[blockNumber]) {
-      this.blockDates[blockNumber] = new Date(
-        await this.ethersProvider.getBlock(blockNumber).then((b) => {
-          return b.timestamp * 1000;
-        }),
-      );
-    }
-    return this.blockDates[blockNumber];
-  }
   // //////////////////////////////////////////////////////////////////////////////
   // Handling Events
   // //////////////////////////////////////////////////////////////////////////////
-  listenToEvents(onEvent: (e: EventInfo) => void, onProgress?: (e: GsnEvent) => void) {
+  listenToEvents(onEvent: onEvent, onProgress?: onProgress) {
     // @ts-ignore
     const listener = async (from, to, event) => {
       const info = await this.getEventInfo(event);
