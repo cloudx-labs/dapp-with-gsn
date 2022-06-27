@@ -2,10 +2,7 @@ import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import Web3Modal from 'web3modal';
 import CounterContractWithGsn from 'gas-station-network/counter-contract';
-import { initGsn } from '@use-gsn/init-gsn';
-
-const paymasterAddress = '0x85B58822d2072124329F541d3d6A7bAeD2E74853';
-const counterAddress = '0x7B821A3e89225a782c96bc5337dF0c63475141Ba';
+import { initGsn } from 'use-gsn';
 
 const useDapp = () => {
   const [dappState, setDappState] = useState<IGlobalContext>(null);
@@ -35,14 +32,15 @@ const useDapp = () => {
           window.location.reload();
         });
 
+        const paymasterAddress = process.env.PAYMASTER_ADDRESS as string;
+        const counterAddress = process.env.COUNTER_ADDRESS as string;
+
         const { gsnSigner, relayProvider } = await initGsn(paymasterAddress, connection);
         const contractWithGsn = new CounterContractWithGsn(
           counterAddress,
           gsnSigner,
           relayProvider,
         );
-
-        console.log(contractWithGsn);
 
         setDappState({
           provider,

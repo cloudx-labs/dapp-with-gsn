@@ -1,7 +1,3 @@
-interface EventInfo {                                                                                                     date?: Date;                                                                                                            previousHolder: string;
-  currentHolder: string;
-}
-
 interface GsnStatusInfo {
   getActiveRelayers: () => Promise<number>;
   getPaymasterBalance: () => Promise<BN>;

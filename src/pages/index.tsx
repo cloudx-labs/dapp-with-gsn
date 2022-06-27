@@ -2,12 +2,10 @@ import type { NextPage } from 'next';
 import { Flex, HStack, Heading } from '@chakra-ui/react';
 import WalletConnector from 'components/wallet-connector';
 import Counter from 'components/counter';
-import { useGsn } from '@use-gsn';
 import useCounter from 'hooks/useCounter';
 
 const Home: NextPage = () => {
-  const contractWithGsn = useGsn();
-  const { onIncrement, onDecrement, counterState } = useCounter(contractWithGsn);
+  const { onIncrement, onDecrement, counterState } = useCounter();
 
   return (
     <Flex p="2rem 20rem" flexDir="column" justify="center">

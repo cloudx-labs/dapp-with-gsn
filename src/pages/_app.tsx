@@ -2,9 +2,9 @@ import { ChakraProvider, Container } from '@chakra-ui/react';
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
+import { GsnContext } from 'use-gsn';
 import { GlobalContext } from 'contexts/global';
 import useDapp from 'hooks/useDapp';
-import { GsnContext } from '@use-gsn';
 
 function MyApp({ Component, pageProps }: AppProps) {
   const { dappState } = useDapp();

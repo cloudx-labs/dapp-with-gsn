@@ -11,6 +11,10 @@ const nextConfig = {
 
     return config;
   },
+  env: {
+    PAYMASTER_ADDRESS: process.env.PAYMASTER_ADDRESS,
+    COUNTER_ADDRESS: process.env.COUNTER_ADDRESS,
+  },
 };
 
 module.exports = nextConfig;
