@@ -5,14 +5,12 @@ import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 
 contract Counter is ERC2771Context  {
     event Increment(
-        address indexed currentUser,
-        address indexed previousUser,
+        address indexed msgSender,
         uint256 step
     );
 
     event Decrement(
-        address indexed currentUser,
-        address indexed previousUser,
+        address indexed msgSender,
         uint256 step
     );
 
@@ -26,14 +24,13 @@ contract Counter is ERC2771Context  {
 
     function increment(uint256 step) external {
         value = value + step;
-        currentUser = _msgSender();
-        emit Increment(_msgSender(), currentUser, step);
+        emit Increment(_msgSender(), step);
     }
 
     function decrement(uint256 step) external  {
         value = value - step;
-        emit Decrement(_msgSender(), currentUser, step);
+        emit Decrement(_msgSender(), step);
     }
 
-    string public versionRecipient = "3.0.0-alpha.6"; // todo check this shitt
+    string public versionRecipient = "3.0.0-alpha.6";
 }

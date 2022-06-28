@@ -16,7 +16,7 @@ const Counter: FC<ICounter> = ({ onIncrement, onDecrement, value }) => (
         size="sm"
         p={4}
       >
-        -1
+        -10
       </Button>
       <Button
         onClick={() => onIncrement(10)}
@@ -27,7 +27,7 @@ const Counter: FC<ICounter> = ({ onIncrement, onDecrement, value }) => (
         size="sm"
         p={4}
       >
-        +1
+        +10
       </Button>
     </HStack>
   </VStack>

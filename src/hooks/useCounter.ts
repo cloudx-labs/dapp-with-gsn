@@ -2,41 +2,39 @@ import { useCallback, useContext, useState, useEffect } from 'react';
 import { GlobalContext } from 'contexts/global';
 
 const useCounter = () => {
-  const ctx = useContext(GlobalContext);
-  const [counterState, setCounterState] = useState(0);
+  const { contractWithGsn } = useContext(GlobalContext)!;
+  const [counterValue, setCounterValue] = useState(0);
 
   const getCounterState = useCallback(async () => {
-    const counterValue = await ctx?.contractWithGsn.getCurrentValue();
-    setCounterState(counterValue);
+    const value = await contractWithGsn.getCurrentValue();
+    setCounterValue(value);
   }, []);
 
   const onIncrement = useCallback(
     async (quantity: number) => {
-      const response = await ctx?.contractWithGsn.onIncrement(quantity);
+      const response = await contractWithGsn.increment(quantity);
       await response?.wait();
       await getCounterState();
     },
-    [ctx],
+    [contractWithGsn],
   );
 
   const onDecrement = useCallback(
     async (quantity: number) => {
-      const response = await ctx?.contractWithGsn.onDecrement(quantity);
+      const response = await contractWithGsn.decrement(quantity);
       await response?.wait();
       await getCounterState();
     },
-    [ctx],
+    [contractWithGsn],
   );
 
   useEffect(() => {
     (async () => {
-      if (ctx?.contractWithGsn) {
-        await getCounterState();
-      }
+      await getCounterState();
     })();
-  }, [ctx?.contractWithGsn]);
+  }, [contractWithGsn]);
 
-  return { onIncrement, onDecrement, counterState };
+  return { onIncrement, onDecrement, counterValue };
 };
 
 export default useCounter;

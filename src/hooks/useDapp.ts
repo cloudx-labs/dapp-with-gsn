@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { ethers } from 'ethers';
 import Web3Modal from 'web3modal';
-import CounterContractWithGsn from 'gas-station-network/counter-contract';
 import { initGsn } from 'use-gsn';
+import CounterContractWithGsn from 'gas-station-network/counter-contract';
 
 const useDapp = () => {
   const [dappState, setDappState] = useState<IGlobalContext>(null);
@@ -14,44 +13,36 @@ const useDapp = () => {
       try {
         const web3Modal = new Web3Modal();
         const connection = await web3Modal.connect();
+
         if (!connection)
           throw new Error('No "window.ethereum" found. do you have Metamask installed?');
 
-        const provider = new ethers.providers.Web3Provider(connection);
-        const network = await provider.getNetwork();
-        const signer = provider.getSigner();
-        const account = await signer.getAddress();
-        const chainId = network.chainId;
-
-        connection.on('chainChanged', (chainId: number) => {
-          console.log('chainChanged', chainId);
+        connection.on('chainChanged', () => {
           window.location.reload();
         });
-        connection.on('accountsChanged', (accs: any[]) => {
-          console.log('accountChanged', accs);
+        connection.on('accountsChanged', () => {
           window.location.reload();
         });
 
         const paymasterAddress = process.env.PAYMASTER_ADDRESS as string;
         const counterAddress = process.env.COUNTER_ADDRESS as string;
 
-        const { gsnSigner, relayProvider } = await initGsn(paymasterAddress, connection);
+        const gsnConfig = {
+          paymasterAddress,
+          performDryRunViewRelayCall: false,
+          loggerConfiguration: {
+            logLevel: 'debug',
+          },
+        };
+
+        const { gsnSigner, relayProvider } = await initGsn(connection, gsnConfig);
         const contractWithGsn = new CounterContractWithGsn(
           counterAddress,
           gsnSigner,
           relayProvider,
         );
 
-        setDappState({
-          provider,
-          signer,
-          account,
-          ethers,
-          connection,
-          network,
-          chainId,
-          contractWithGsn,
-        });
+        setDappState({ contractWithGsn });
       } catch (err) {
         setError(err);
       }
