@@ -1,5 +1,5 @@
 {
-  "name": "counter-with-custom-gsn",
+  "name": "dapp-with-use-gsn",
   "version": "0.1.0",
   "private": true,
   "scripts": {
