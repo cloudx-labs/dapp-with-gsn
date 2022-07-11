@@ -1,0 +1,10 @@
+{
+ "build": {
+   "image": "node:alpine",
+   "command": "npm ci --legacy-peer-deps && npm run build",
+   "publicDir": "out",
+   "environment": {
+     "SOME_ENV": "Build finished!"
+   }
+ }
+}
