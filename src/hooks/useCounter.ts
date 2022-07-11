@@ -12,8 +12,7 @@ const useCounter = () => {
 
   const onIncrement = useCallback(
     async (quantity: number) => {
-      const response = await contractWithGsn.increment(quantity);
-      await response?.wait();
+      await contractWithGsn.increment(quantity);
       await getCounterState();
     },
     [contractWithGsn],
@@ -21,8 +20,7 @@ const useCounter = () => {
 
   const onDecrement = useCallback(
     async (quantity: number) => {
-      const response = await contractWithGsn.decrement(quantity);
-      await response?.wait();
+      await contractWithGsn.decrement(quantity);
       await getCounterState();
     },
     [contractWithGsn],

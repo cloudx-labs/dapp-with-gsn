@@ -1,5 +1,7 @@
+import { ContractReceipt } from "ethers";
+
 interface ICounterContract {
-  increment(step: number): Promise<ContractTransaction>;
-  decrement(step: number): Promise<ContractTransaction>;
+  increment(step: number): Promise<ContractReceipt>;
+  decrement(step: number): Promise<ContractReceipt>;
   getCurrentValue(): Promise<number>;
 }

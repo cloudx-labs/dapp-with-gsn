@@ -1,4 +1,4 @@
-declare module 'use-gsn';
+import { ICounterContract } from './counter-contract';
 
 type IGlobalContext = {
   contractWithGsn: ICounterContract;
